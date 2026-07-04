@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажер німецьких неправильних дієслів</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+
+        .perspective {
+            perspective: 1000px;
+        }
+        .preserve-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-md py-6 px-4">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight">🇩🇪 Німецькі неправильні дієслова</h1>
+                <p class="text-blue-100 text-sm mt-1">Інтерактивний тренажер за вашою таблицею (54 дієслова)</p>
+            </div>
+            <!-- Navigation Tabs -->
+            <div class="flex bg-indigo-800/50 p-1 rounded-lg border border-indigo-400/30">
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="px-4 py-2 rounded-md text-sm font-medium transition-all bg-white text-indigo-900 shadow">
+                    📝 Тест
+                </button>
+                <button onclick="switchTab('flashcards')" id="tab-flashcards" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-indigo-100 hover:text-white">
+                    📇 Картки
+                </button>
+                <button onclick="switchTab('list')" id="tab-list" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-indigo-100 hover:text-white">
+                    📚 Словник
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8">
+        
+        <!-- SECTION: QUIZ -->
+        <section id="sec-quiz" class="space-y-6">
+            <!-- Setup Screen -->
+            <div id="quiz-setup" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 max-w-2xl mx-auto">
+                <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    ⚙️ Налаштування тестування
+                </h2>
+                
+                <div class="space-y-5">
+                    <!-- Quiz Mode -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Формат запитань:</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="quiz-mode" value="choice" checked class="w-4 h-4 text-blue-600">
+                                <div>
+                                    <span class="font-medium text-slate-800 block">Варіанти відповідей</span>
+                                    <span class="text-xs text-slate-500">Оберіть один правильний варіант із 4-х</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="quiz-mode" value="write" class="w-4 h-4 text-blue-600">
+                                <div>
+                                    <span class="font-medium text-slate-800 block">Введення вручну</span>
+                                    <span class="text-xs text-slate-500">Впишіть самостійно (з віртуальною клавіатурою)</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Question Types -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Що перевіряти?</label>
+                        <select id="quiz-type" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            <option value="all-forms">Präteritum + Partizip II (Обидві форми разом)</option>
+                            <option value="prateritum">Тільки Präteritum</option>
+                            <option value="partizip">Тільки Partizip II</option>
+                            <option value="translation">Переклад з німецької на українську</option>
+                        </select>
+                    </div>
+
+                    <!-- Question Count -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Кількість запитань:</label>
+                        <div class="flex gap-3">
+                            <button onclick="selectCount(10)" class="btn-count flex-1 py-2 px-3 rounded-lg border border-blue-500 bg-blue-50 text-blue-700 font-medium transition" data-count="10">10</option>
+                            <button onclick="selectCount(20)" class="btn-count flex-1 py-2 px-3 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition" data-count="20">20</button>
+                            <button onclick="selectCount(35)" class="btn-count flex-1 py-2 px-3 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition" data-count="35">35</button>
+                            <button onclick="selectCount(54)" class="btn-count flex-1 py-2 px-3 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition" data-count="54">Всі (54)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="startQuiz()" class="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition transform active:scale-98">
+                    Розпочати тест
+                </button>
+            </div>
+
+            <!-- Quiz Running -->
+            <div id="quiz-active" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 max-w-2xl mx-auto">
+                <!-- Progress & Score -->
+                <div class="flex justify-between items-center mb-4 text-xs font-semibold text-slate-500">
+                    <span id="quiz-progress-text">Питання 1 з 10</span>
+                    <span id="quiz-score-text" class="text-emerald-600">Рахунок: 0/0</span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-8">
+                    <div id="quiz-progress-bar" class="bg-blue-600 h-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+
+                <!-- Card/Question Area -->
+                <div class="text-center mb-8">
+                    <span class="text-xs uppercase font-extrabold tracking-widest text-indigo-600 px-3 py-1 bg-indigo-50 rounded-full">
+                        Дієслово
+                    </span>
+                    <h3 id="quiz-question-word" class="text-3xl font-extrabold text-slate-950 mt-3 mb-1">beginnen</h3>
+                    <p id="quiz-question-hint" class="text-slate-500 text-sm">Переклад: починати</p>
+                </div>
+
+                <!-- Input Field Mode -->
+                <div id="input-mode-container" class="hidden space-y-4 mb-6">
+                    <label id="input-label" class="block text-sm font-semibold text-slate-700">Введіть форми через кому (напр. begann, begonnen):</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="quiz-text-input" autocomplete="off" class="flex-grow p-3 rounded-xl border border-slate-200 text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Введіть відповідь тут...">
+                        <button onclick="submitWrittenAnswer()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded-xl transition">
+                            ОК
+                        </button>
+                    </div>
+                    <!-- Umlaut Helper Keyboard -->
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="insertChar('ä')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-md border border-slate-200">ä</button>
+                        <button onclick="insertChar('ö')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-md border border-slate-200">ö</button>
+                        <button onclick="insertChar('ü')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-md border border-slate-200">ü</button>
+                        <button onclick="insertChar('ß')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-md border border-slate-200">ß</button>
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Mode -->
+                <div id="choice-mode-container" class="grid grid-cols-1 gap-3 mb-6">
+                    <!-- Buttons generated dynamically -->
+                </div>
+
+                <!-- Feedback Display -->
+                <div id="quiz-feedback" class="hidden p-4 rounded-xl mb-6 text-center font-medium"></div>
+
+                <!-- Next Button -->
+                <button id="btn-next-question" onclick="nextQuestion()" class="hidden w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition">
+                    Наступне питання →
+                </button>
+            </div>
+
+            <!-- Quiz Results Screen -->
+            <div id="quiz-results" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 max-w-2xl mx-auto text-center">
+                <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl mb-4">
+                    🏆
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-1">Тест завершено!</h2>
+                <p class="text-slate-500 mb-6">Ось ваші результати тестування</p>
+
+                <div class="bg-slate-50 p-6 rounded-xl inline-block min-w-[200px] mb-8">
+                    <span class="text-xs text-slate-400 uppercase font-bold tracking-wider block">Ваш результат</span>
+                    <span id="result-score" class="text-4xl font-extrabold text-blue-600">8 / 10</span>
+                    <span id="result-percentage" class="text-xs block text-slate-500 mt-1">(80%)</span>
+                </div>
+
+                <div id="mistakes-review" class="text-left mb-8 max-h-60 overflow-y-auto hidden">
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm">Слова, де були помилки:</h3>
+                    <ul id="mistakes-list" class="space-y-2 text-sm">
+                        <!-- Mistakes populated dynamically -->
+                    </ul>
+                </div>
+
+                <div class="flex gap-4">
+                    <button onclick="restartQuiz()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition">
+                        Спробувати знову
+                    </button>
+                    <button onclick="switchTab('flashcards')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-6 rounded-xl transition">
+                        Вчити картки
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: FLASHCARDS -->
+        <section id="sec-flashcards" class="hidden space-y-6 max-w-lg mx-auto">
+            <div class="text-center">
+                <h2 class="text-xl font-bold text-slate-900">📇 Флеш-картки</h2>
+                <p class="text-slate-500 text-sm">Натисніть на картку, щоб перевернути її</p>
+            </div>
+
+            <!-- Card Box -->
+            <div class="perspective w-full h-80 cursor-pointer" onclick="flipCard()">
+                <div id="flashcard-inner" class="preserve-3d relative w-full h-full transition-transform duration-500 ease-out">
+                    
+                    <!-- Front (Infinitive & Translation) -->
+                    <div class="backface-hidden absolute inset-0 w-full h-full bg-white border border-slate-200 rounded-2xl shadow-md p-8 flex flex-col justify-between text-center">
+                        <div class="text-xs text-slate-400 font-bold uppercase tracking-widest">Infinitive</div>
+                        <div class="my-auto">
+                            <h3 id="card-front-word" class="text-4xl font-extrabold text-slate-900">beginnen</h3>
+                            <p id="card-front-translation" class="text-slate-500 text-lg mt-2">починати</p>
+                        </div>
+                        <div class="text-xs text-blue-600 font-semibold">Натисніть, щоб перевернути</div>
+                    </div>
+
+                    <!-- Back (Forms) -->
+                    <div class="backface-hidden rotate-y-180 absolute inset-0 w-full h-full bg-slate-900 border border-slate-800 text-white rounded-2xl shadow-md p-8 flex flex-col justify-between text-center">
+                        <div class="text-xs text-indigo-300 font-bold uppercase tracking-widest">Форми дієслова</div>
+                        <div class="my-auto space-y-6">
+                            <div>
+                                <span class="text-xs text-slate-400 block uppercase font-medium">Präteritum</span>
+                                <h4 id="card-back-prateritum" class="text-3xl font-bold text-emerald-400">begann</h4>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 block uppercase font-medium">Partizip II</span>
+                                <h4 id="card-back-partizip" class="text-3xl font-bold text-amber-400">begonnen</h4>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-400">Натисніть, щоб сховати</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Card Controls -->
+            <div class="flex justify-between items-center gap-4">
+                <button onclick="prevCard()" class="px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 text-sm font-semibold transition">
+                    ← Назад
+                </button>
+                <span id="card-counter" class="text-sm font-medium text-slate-500">1 з 54</span>
+                <button onclick="nextCard()" class="px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 text-sm font-semibold transition">
+                    Далі →
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION: LIST / DICTIONARY -->
+        <section id="sec-list" class="hidden space-y-4">
+            <!-- Search & Filters -->
+            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-3 justify-between items-center">
+                <div class="relative w-full sm:max-w-xs">
+                    <input type="text" id="verb-search" oninput="filterVerbs()" placeholder="Пошук дієслова або перекладу..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500">
+                    <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
+                </div>
+                <div id="verb-total" class="text-sm text-slate-500 font-semibold">
+                    Усього дієслів: 54
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                <th class="p-4">Infinitiv</th>
+                                <th class="p-4">Präteritum</th>
+                                <th class="p-4">Partizip II</th>
+                                <th class="p-4">Переклад</th>
+                            </tr>
+                        </thead>
+                        <tbody id="verb-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JS Logic -->
+    <script>
+        // Full list of 54 verbs from the provided document
+        const verbsData = [
+            { infinitive: "beginnen", prateritum: "begann", partizip2: "begonnen", translation: "починати" },
+            { infinitive: "bieten", prateritum: "bot", partizip2: "geboten", translation: "пропонувати" },
+            { infinitive: "bitten", prateritum: "bat", partizip2: "gebeten", translation: "просити" },
+            { infinitive: "bleiben", prateritum: "blieb", partizip2: "geblieben", translation: "залишатися" },
+            { infinitive: "bringen", prateritum: "brachte", partizip2: "gebracht", translation: "принести, привезти" },
+            { infinitive: "denken", prateritum: "dachte", partizip2: "gedacht", translation: "думати" },
+            { infinitive: "empfehlen", prateritum: "empfahl", partizip2: "empfohlen", translation: "радити" },
+            { infinitive: "essen", prateritum: "aß", partizip2: "gegessen", translation: "їсти" },
+            { infinitive: "fahren", prateritum: "fuhr", partizip2: "gefahren", translation: "їхати" },
+            { infinitive: "fallen", prateritum: "fiel", partizip2: "gefallen", translation: "падати" },
+            { infinitive: "fang", prateritum: "fing", partizip2: "gefangen", translation: "ловувати (ловити)" },
+            { infinitive: "fangen", prateritum: "fing", partizip2: "gefangen", translation: "ловити" },
+            { infinitive: "finden", prateritum: "fand", partizip2: "gefunden", translation: "знаходити" },
+            { infinitive: "fliegen", prateritum: "flog", partizip2: "geflogen", translation: "літати" },
+            { infinitive: "geben", prateritum: "gab", partizip2: "gegeben", translation: "давати" },
+            { infinitive: "gehen", prateritum: "ging", partizip2: "gegangen", translation: "йти" },
+            { infinitive: "haben", prateritum: "hatte", partizip2: "gehabt", translation: "мати" },
+            { infinitive: "halten", prateritum: "hielt", partizip2: "gehalten", translation: "тримати" },
+            { infinitive: "helfen", prateritum: "half", partizip2: "geholfen", translation: "допомагати" },
+            { infinitive: "kennen", prateritum: "kannte", partizip2: "gekannt", translation: "знати" },
+            { infinitive: "kommen", prateritum: "kam", partizip2: "gekommen", translation: "приходити" },
+            { infinitive: "laufen", prateritum: "lief", partizip2: "gelaufen", translation: "бігти" },
+            { infinitive: "lesen", prateritum: "las", partizip2: "gelesen", translation: "читати" },
+            { infinitive: "liegen", prateritum: "lag", partizip2: "gelegen", translation: "лежати" },
+            { infinitive: "nehmen", prateritum: "nahm", partizip2: "genommen", translation: "брати" },
+            { infinitive: "nennen", prateritum: "nannte", partizip2: "genannt", translation: "давати ім‘я" },
+            { infinitive: "raten", prateritum: "riet", partizip2: "geraten", translation: "радити" },
+            { infinitive: "rufen", prateritum: "rief", partizip2: "gerufen", translation: "кликати" },
+            { infinitive: "schlafen", prateritum: "schlief", partizip2: "geschlafen", translation: "спати" },
+            { infinitive: "schlagen", prateritum: "schlug", partizip2: "geschlagen", translation: "бити" },
+            { infinitive: "schließen", prateritum: "schloss", partizip2: "geschlossen", translation: "закривати" },
+            { infinitive: "schreiben", prateritum: "schrieb", partizip2: "geschrieben", translation: "писати" },
+            { infinitive: "schwimmen", prateritum: "schwamm", partizip2: "geschwommen", translation: "плавати" },
+            { infinitive: "sehen", prateritum: "sah", partizip2: "gesehen", translation: "бачити" },
+            { infinitive: "sein", prateritum: "war", partizip2: "gewesen", translation: "бути" },
+            { infinitive: "singen", prateritum: "sang", partizip2: "gesungen", translation: "співати" },
+            { infinitive: "sitzen", prateritum: "saß", partizip2: "gesessen", translation: "сидіти" },
+            { infinitive: "sprechen", prateritum: "sprach", partizip2: "gesprochen", translation: "розмовляти" },
+            { infinitive: "springen", prateritum: "sprang", partizip2: "gesprungen", translation: "стрибати" },
+            { infinitive: "stehen", prateritum: "stand", partizip2: "gestanden", translation: "стояти" },
+            { infinitive: "steigen", prateritum: "stieg", partizip2: "gestiegen", translation: "підніматися" },
+            { infinitive: "sterben", prateritum: "starb", partizip2: "gestorben", translation: "померти" },
+            { infinitive: "tragen", prateritum: "trug", partizip2: "getragen", translation: "носити" },
+            { infinitive: "treffen", prateritum: "traf", partizip2: "getroffen", translation: "зустрічати" },
+            { infinitive: "treten", prateritum: "trat", partizip2: "getreten", translation: "ступати" },
+            { infinitive: "trinken", prateritum: "trank", partizip2: "getrunken", translation: "пити" },
+            { infinitive: "tun", prateritum: "tat", partizip2: "getan", translation: "робити" },
+            { infinitive: "vergessen", prateritum: "vergaß", partizip2: "vergessen", translation: "забувати" },
+            { infinitive: "verlieren", prateritum: "verlor", partizip2: "verloren", translation: "губити, програти" },
+            { infinitive: "verstehen", prateritum: "verstand", partizip2: "verstanden", translation: "розуміти" },
+            { infinitive: "wachsen", prateritum: "wuchs", partizip2: "gewachsen", translation: "виростати" },
+            { infinitive: "waschen", prateritum: "wusch", partizip2: "gewaschen", translation: "мити" },
+            { infinitive: "wissen", prateritum: "wusste", partizip2: "gewusst", translation: "знати" },
+            { infinitive: "werden", prateritum: "wurde", partizip2: "geworden", translation: "ставати" },
+            { infinitive: "ziehen", prateritum: "zog", partizip2: "gezogen", translation: "тягнути" }
+        ];
+
+        // Ensure duplicates are removed (like 'fangen' which was listed twice in various inputs)
+        const verbs = Array.from(new Set(verbsData.map(v => v.infinitive)))
+            .map(inf => verbsData.find(v => v.infinitive === inf));
+
+        // State variables
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let correctAnswersCount = 0;
+        let selectedCountVal = 10;
+        let mistakesList = [];
+        let hasAnsweredCurrent = false;
+
+        let flashcardsIndex = 0;
+        let isCardFlipped = false;
+
+        // Initialize components
+        window.onload = () => {
+            renderVerbsTable();
+            updateFlashcard();
+        };
+
+        // Navigation between tabs
+        function switchTab(tabId) {
+            // Update Tab Buttons
+            ['quiz', 'flashcards', 'list'].forEach(id => {
+                const tab = document.getElementById(`tab-${id}`);
+                if (id === tabId) {
+                    tab.classList.add('bg-white', 'text-indigo-900', 'shadow');
+                    tab.classList.remove('text-indigo-100', 'hover:text-white');
+                } else {
+                    tab.classList.remove('bg-white', 'text-indigo-900', 'shadow');
+                    tab.classList.add('text-indigo-100', 'hover:text-white');
+                }
+            });
+
+            // Show sections
+            document.getElementById('sec-quiz').classList.add('hidden');
+            document.getElementById('sec-flashcards').classList.add('hidden');
+            document.getElementById('sec-list').classList.add('hidden');
+
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+        }
+
+        // ==================== QUIZ LOGIC ====================
+        function selectCount(count) {
+            selectedCountVal = count;
+            document.querySelectorAll('.btn-count').forEach(btn => {
+                if(parseInt(btn.getAttribute('data-count')) === count) {
+                    btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700');
+                    btn.classList.remove('border-slate-200', 'text-slate-600', 'hover:bg-slate-50');
+                } else {
+                    btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700');
+                    btn.classList.add('border-slate-200', 'text-slate-600', 'hover:bg-slate-50');
+                }
+            });
+        }
+
+        function startQuiz() {
+            const quizType = document.getElementById('quiz-type').value;
+            const quizMode = document.querySelector('input[name="quiz-mode"]:checked').value;
+
+            // Shuffle verbs and pick selected amount
+            const shuffled = [...verbs].sort(() => 0.5 - Math.random());
+            quizQuestions = shuffled.slice(0, Math.min(selectedCountVal, shuffled.length));
+
+            currentQuestionIndex = 0;
+            correctAnswersCount = 0;
+            mistakesList = [];
+
+            document.getElementById('quiz-setup').classList.add('hidden');
+            document.getElementById('quiz-results').classList.add('hidden');
+            document.getElementById('quiz-active').classList.remove('hidden');
+
+            showQuestion(quizType, quizMode);
+        }
+
+        function showQuestion(quizType, quizMode) {
+            hasAnsweredCurrent = false;
+            document.getElementById('btn-next-question').classList.add('hidden');
+            
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.add('hidden');
+            feedback.className = "hidden p-4 rounded-xl mb-6 text-center font-medium";
+
+            const verb = quizQuestions[currentQuestionIndex];
+            
+            // Text values
+            document.getElementById('quiz-progress-text').innerText = `Питання ${currentQuestionIndex + 1} з ${quizQuestions.length}`;
+            document.getElementById('quiz-score-text').innerText = `Рахунок: ${correctAnswersCount}/${currentQuestionIndex}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIndex) / quizQuestions.length) * 100}%`;
+
+            const qWord = document.getElementById('quiz-question-word');
+            const qHint = document.getElementById('quiz-question-hint');
+
+            // Setup Question texts
+            qWord.innerText = verb.infinitive;
+            
+            if (quizType === 'translation') {
+                qHint.innerText = "Оберіть правильний переклад:";
+            } else if (quizType === 'prateritum') {
+                qHint.innerText = `Präteritum для '${verb.infinitive}' (переклад: ${verb.translation}):`;
+            } else if (quizType === 'partizip') {
+                qHint.innerText = `Partizip II для '${verb.infinitive}' (переклад: ${verb.translation}):`;
+            } else {
+                qHint.innerText = `Вкажіть Präteritum та Partizip II (переклад: ${verb.translation}):`;
+            }
+
+            const inputContainer = document.getElementById('input-mode-container');
+            const choiceContainer = document.getElementById('choice-mode-container');
+            
+            // Clean dynamic structures
+            choiceContainer.innerHTML = '';
+            document.getElementById('quiz-text-input').value = '';
+
+            if (quizMode === 'write') {
+                inputContainer.classList.remove('hidden');
+                choiceContainer.classList.add('hidden');
+                
+                const label = document.getElementById('input-label');
+                if (quizType === 'all-forms') {
+                    label.innerText = "Введіть форми через кому (наприклад: begann, begonnen):";
+                } else if (quizType === 'prateritum') {
+                    label.innerText = "Введіть форму Präteritum:";
+                } else if (quizType === 'partizip') {
+                    label.innerText = "Введіть форму Partizip II:";
+                } else {
+                    label.innerText = "Введіть переклад українською:";
+                }
+                
+                // Autofocus on text field
+                setTimeout(() => document.getElementById('quiz-text-input').focus(), 100);
+            } else {
+                inputContainer.classList.add('hidden');
+                choiceContainer.classList.remove('hidden');
+
+                // Generate Choices
+                let correctAnswer = "";
+                let choicesPool = [];
+
+                if (quizType === 'translation') {
+                    correctAnswer = verb.translation;
+                    choicesPool = verbs.map(v => v.translation);
+                } else if (quizType === 'prateritum') {
+                    correctAnswer = verb.prateritum;
+                    choicesPool = verbs.map(v => v.prateritum);
+                } else if (quizType === 'partizip') {
+                    correctAnswer = verb.partizip2;
+                    choicesPool = verbs.map(v => v.partizip2);
+                } else {
+                    correctAnswer = `${verb.prateritum}, ${verb.partizip2}`;
+                    choicesPool = verbs.map(v => `${v.prateritum}, ${v.partizip2}`);
+                }
+
+                // Filter duplicates and select 3 incorrect answers
+                choicesPool = Array.from(new Set(choicesPool)).filter(item => item !== correctAnswer);
+                const shuffledPool = choicesPool.sort(() => 0.5 - Math.random()).slice(0, 3);
+                
+                // Add correct answer and shuffle options
+                const finalOptions = [...shuffledPool, correctAnswer].sort(() => 0.5 - Math.random());
+
+                finalOptions.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 font-medium transition active:scale-98 flex justify-between items-center";
+                    btn.innerHTML = `<span>${opt}</span><span class="opacity-0 transition">✓</span>`;
+                    btn.onclick = () => submitChoiceAnswer(opt, correctAnswer, btn);
+                    choiceContainer.appendChild(btn);
+                });
+            }
+        }
+
+        function insertChar(char) {
+            const input = document.getElementById('quiz-text-input');
+            input.value += char;
+            input.focus();
+        }
+
+        function submitChoiceAnswer(selected, correct, buttonElement) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden');
+
+            const isCorrect = (selected === correct);
+
+            // Highlight all options
+            const buttons = document.querySelectorAll('#choice-mode-container button');
+            buttons.forEach(btn => {
+                const optText = btn.querySelector('span').innerText;
+                if (optText === correct) {
+                    btn.classList.remove('border-slate-200', 'hover:border-blue-500', 'hover:bg-blue-50');
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                    btn.querySelector('span:last-child').innerHTML = "✓";
+                    btn.querySelector('span:last-child').classList.remove('opacity-0');
+                    btn.querySelector('span:last-child').classList.add('text-emerald-600', 'font-bold');
+                } else if (optText === selected && !isCorrect) {
+                    btn.classList.remove('border-slate-200', 'hover:border-blue-500', 'hover:bg-blue-50');
+                    btn.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+                    btn.querySelector('span:last-child').innerHTML = "✗";
+                    btn.querySelector('span:last-child').classList.remove('opacity-0');
+                    btn.querySelector('span:last-child').classList.add('text-rose-600', 'font-bold');
+                }
+            });
+
+            if (isCorrect) {
+                correctAnswersCount++;
+                feedback.innerText = "🎉 Абсолютно правильно!";
+                feedback.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+            } else {
+                feedback.innerText = `💡 Неправильно. Правильна відповідь: ${correct}`;
+                feedback.classList.add('bg-rose-50', 'text-rose-800', 'border', 'border-rose-200');
+                mistakesList.push(quizQuestions[currentQuestionIndex]);
+            }
+
+            document.getElementById('btn-next-question').classList.remove('hidden');
+        }
+
+        function submitWrittenAnswer() {
+            if (hasAnsweredCurrent) return;
+            const inputElement = document.getElementById('quiz-text-input');
+            const userAns = inputElement.value.trim().toLowerCase();
+            if(!userAns) return;
+
+            hasAnsweredCurrent = true;
+
+            const verb = quizQuestions[currentQuestionIndex];
+            const quizType = document.getElementById('quiz-type').value;
+
+            let correctText = "";
+            let isCorrect = false;
+
+            if (quizType === 'translation') {
+                correctText = verb.translation;
+                // Simple validation for translation text (check if included)
+                isCorrect = userAns === correctText.toLowerCase() || correctText.toLowerCase().includes(userAns);
+            } else if (quizType === 'prateritum') {
+                correctText = verb.prateritum;
+                isCorrect = userAns === correctText.toLowerCase();
+            } else if (quizType === 'partizip') {
+                correctText = verb.partizip2;
+                isCorrect = userAns === correctText.toLowerCase();
+            } else {
+                correctText = `${verb.prateritum}, ${verb.partizip2}`;
+                // Matches standard patterns "begann, begonnen" or space separated
+                const normalizedUser = userAns.replace(/[^a-zäöüß ]/g, '').replace(/\s+/g, ' ');
+                const normalizedCorrect = correctText.toLowerCase().replace(/[^a-zäöüß ]/g, '').replace(/\s+/g, ' ');
+                isCorrect = normalizedUser === normalizedCorrect;
+            }
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden');
+
+            if (isCorrect) {
+                correctAnswersCount++;
+                feedback.innerText = "🎉 Відмінно! Правильна відповідь.";
+                feedback.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+            } else {
+                feedback.innerText = `💡 Помилка! Правильний варіант: ${correctText}`;
+                feedback.classList.add('bg-rose-50', 'text-rose-800', 'border', 'border-rose-200');
+                mistakesList.push(verb);
+            }
+
+            document.getElementById('btn-next-question').classList.remove('hidden');
+        }
+
+        // Handle Enter key for written answers
+        document.getElementById('quiz-text-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitWrittenAnswer();
+            }
+        });
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizQuestions.length) {
+                const quizType = document.getElementById('quiz-type').value;
+                const quizMode = document.querySelector('input[name="quiz-mode"]:checked').value;
+                showQuestion(quizType, quizMode);
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-active').classList.add('hidden');
+            document.getElementById('quiz-results').classList.remove('hidden');
+
+            document.getElementById('result-score').innerText = `${correctAnswersCount} / ${quizQuestions.length}`;
+            const percentage = Math.round((correctAnswersCount / quizQuestions.length) * 100);
+            document.getElementById('result-percentage').innerText = `(${percentage}%)`;
+
+            const mistakesReview = document.getElementById('mistakes-review');
+            const mistakesUl = document.getElementById('mistakes-list');
+            mistakesUl.innerHTML = '';
+
+            if (mistakesList.length > 0) {
+                mistakesReview.classList.remove('hidden');
+                // Remove duplicates in mistakes
+                const uniqueMistakes = Array.from(new Set(mistakesList.map(m => m.infinitive)))
+                    .map(inf => mistakesList.find(m => m.infinitive === inf));
+
+                uniqueMistakes.forEach(verb => {
+                    const li = document.createElement('li');
+                    li.className = "p-3 bg-red-50 text-red-900 border border-red-100 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1";
+                    li.innerHTML = `
+                        <strong class="text-base">${verb.infinitive}</strong>
+                        <span class="text-xs text-slate-500">Prätitum: <strong class="text-slate-700">${verb.prateritum}</strong> | Partizip II: <strong class="text-slate-700">${verb.partizip2}</strong></span>
+                        <span class="text-xs text-indigo-700 italic">${verb.translation}</span>
+                    `;
+                    mistakesUl.appendChild(li);
+                });
+            } else {
+                mistakesReview.classList.add('hidden');
+            }
+        }
+
+        function restartQuiz() {
+            document.getElementById('quiz-results').classList.add('hidden');
+            document.getElementById('quiz-setup').classList.remove('hidden');
+        }
+
+
+        // ==================== FLASHCARD LOGIC ====================
+        function updateFlashcard() {
+            const verb = verbs[flashcardsIndex];
+            const cardInner = document.getElementById('flashcard-inner');
+            
+            // Unflip card immediately (smoothly if it was flipped)
+            if (isCardFlipped) {
+                cardInner.classList.remove('rotate-y-180');
+                isCardFlipped = false;
+                // Delay content switch slightly for better visual
+                setTimeout(() => setCardData(verb), 200);
+            } else {
+                setCardData(verb);
+            }
+
+            document.getElementById('card-counter').innerText = `${flashcardsIndex + 1} з ${verbs.length}`;
+        }
+
+        function setCardData(verb) {
+            document.getElementById('card-front-word').innerText = verb.infinitive;
+            document.getElementById('card-front-translation').innerText = verb.translation;
+            document.getElementById('card-back-prateritum').innerText = verb.prateritum;
+            document.getElementById('card-back-partizip').innerText = verb.partizip2;
+        }
+
+        function flipCard() {
+            const cardInner = document.getElementById('flashcard-inner');
+            if (isCardFlipped) {
+                cardInner.classList.remove('rotate-y-180');
+                isCardFlipped = false;
+            } else {
+                cardInner.classList.add('rotate-y-180');
+                isCardFlipped = true;
+            }
+        }
+
+        function nextCard() {
+            flashcardsIndex = (flashcardsIndex + 1) % verbs.length;
+            updateFlashcard();
+        }
+
+        function prevCard() {
+            flashcardsIndex = (flashcardsIndex - 1 + verbs.length) % verbs.length;
+            updateFlashcard();
+        }
+
+
+        // ==================== DICTIONARY/LIST LOGIC ====================
+        function renderVerbsTable() {
+            const body = document.getElementById('verb-table-body');
+            body.innerHTML = '';
+
+            verbs.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-900">${v.infinitive}</td>
+                    <td class="p-4 text-emerald-700 font-semibold">${v.prateritum}</td>
+                    <td class="p-4 text-amber-700 font-semibold">${v.partizip2}</td>
+                    <td class="p-4 text-slate-500 font-medium">${v.translation}</td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function filterVerbs() {
+            const q = document.getElementById('verb-search').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('#verb-table-body tr');
+            let matchedCount = 0;
+
+            rows.forEach((row, idx) => {
+                const verb = verbs[idx];
+                const text = `${verb.infinitive} ${verb.prateritum} ${verb.partizip2} ${verb.translation}`.toLowerCase();
+                
+                if (text.includes(q)) {
+                    row.classList.remove('hidden');
+                    matchedCount++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('verb-total').innerText = `Знайдено: ${matchedCount} з ${verbs.length}`;
+        }
+    </script>
+</body>
+</html>
+
